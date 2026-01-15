@@ -6,4 +6,5 @@ def main():
     get_files_info("calculator", "/bin")
     get_files_info("calculator", "../")
 
-main()
+if __name__ == "__main__":
+    main()
