@@ -2,6 +2,8 @@ import os, argparse
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from prompts import system_prompt
+from functions.genai.call_function import available_functions
 
 
 
@@ -18,16 +20,14 @@ def main():
 
     messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
 
-    print("Hello from mini-claude-code!")
 
-    if(api_key):
-        print("Api Key found")
-    else: 
+    if not api_key:
         raise RuntimeError("Api Key not found!")
     
     response = client.models.generate_content(
         model='gemini-2.5-flash', 
-        contents= messages
+        contents= messages,
+        config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt, temperature=0),
     )
 
     if(response.usage_metadata == None): 
@@ -36,6 +36,11 @@ def main():
     candidates_token_count, prompt_token_count = response.usage_metadata.candidates_token_count, response.usage_metadata.prompt_token_count
     if(args.verbose == True):
         print(f"User prompt: {args.user_prompt}\nPrompt tokens: {prompt_token_count}\nResponse tokens: {candidates_token_count}")
-    print(response.text)
+   
+    if response.function_calls != None:
+        for function_call in response.function_calls:
+            print(f"Calling function: {function_call.name}({function_call.args})")
+    else:
+        print(response.text)
 if __name__ == "__main__":
     main()
