@@ -70,6 +70,8 @@ def get_files_info(working_directory, directory="."):
 
     try: 
         res = list_files(target_dir)
+        return res
     except Exception as e:
         print(f"Error: {e}")
+        return f"Error: {e}"  # ← and this
 
